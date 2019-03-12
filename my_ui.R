@@ -5,6 +5,7 @@ library(shiny)
 library(plotly)
 library(maps)
 library(rsconnect)
+library(scales)
 options(scipen = 999)
 
 one_Bedroom <- read.csv("data/State_MedianRentalPrice_1Bedroom.csv", stringsAsFactors = F)
@@ -17,6 +18,28 @@ Duplex_Triplex <- read.csv("data/State_MedianRentalPrice_DuplexTriplex.csv", str
 Sfr <- read.csv("data/State_MedianRentalPrice_Sfr.csv", stringsAsFactors = F)
 Studio <- read.csv("data/State_MedianRentalPrice_Studio.csv", stringsAsFactors = F)
 
+get_mean <- function(sample_df) {
+  length_cols <- length(colnames(sample_df))
+  Mean <- as.data.frame(mean(unlist(sample_df[, length_cols]), na.rm = T))
+  colnames(Mean)[1] <- colnames(sample_df)[3]
+  index <- 4
+  while (index <= length_cols) {
+    names_sp <- colnames(sample_df)[index]
+    Mean <- mutate(Mean,
+                   names = mean(unlist(sample_df[, index]), na.rm = T)
+    )
+    colnames(Mean)[index - 2] <- names_sp
+    index <- index + 1
+  }
+  type_name <- paste0(deparse(substitute(sample_df)), "_mean_price")
+  
+  Mean <- gather(Mean,
+                 key = "Year",
+                 value = type_name
+  )
+  colnames(Mean)[2] <- type_name
+  Mean
+}
 
 combined_df <- get_mean(one_Bedroom) %>%
   left_join(get_mean(two_Bedroom), by = "Year") %>%
@@ -28,79 +51,50 @@ combined_df <- get_mean(one_Bedroom) %>%
   left_join(get_mean(Sfr), by = "Year") %>%
   left_join(get_mean(Studio), by = "Year")
 
+color_type <- c("gray16", "deepskyblue2", "darkorchid3",
+                "olivedrab2", "cyan2", "sienna3",
+                "purple1", "aquamarine1", "firebrick2")
 combined_df$Year <- substr(combined_df$Year, 2, nchar(combined_df$Year))
-
-get_mean <- function(sample_df) {
-  length_cols <- length(colnames(sample_df))
-  Mean <- as.data.frame(mean(unlist(sample_df[, length_cols]), na.rm = T))
-  colnames(Mean)[1] <- colnames(sample_df)[3]
-  index <- 4
-  while (index <= length_cols) {
-    names_sp <- colnames(sample_df)[index]
-    Mean <- mutate(Mean,
-      names = mean(unlist(sample_df[, index]), na.rm = T)
-    )
-    colnames(Mean)[index - 2] <- names_sp
-    index <- index + 1
-  }
-  type_name <- paste0(deparse(substitute(sample_df)), "_mean_price")
-
-  Mean <- gather(Mean,
-    key = "Year",
-    value = type_name
-  )
-  colnames(Mean)[2] <- type_name
-  Mean
-}
+type_of_choices <- colnames(combined_df)[2:10]
 
 
-page_one <- tabPanel(
-  "Introduction",
-  textInput("name", "name"),
-  p(strong("hello guys !!!"), "We are penguins!"),
-  textOutput("graph_Demonstration")
-)
+page_one <- tabPanel("Introduction", 
+                     textInput("name", "name"),
+                     p(strong("hello guys !!!"), "We are penguins!"),
+                     textOutput("graph_Demonstration"))
 
 page_two <- tabPanel(
   "Year vs. Prices of various housings",
-  textOutput("graph_Demonstration"),
-
+  
   ## Sidebar layout with input and output definitions
   sidebarLayout(
     # Sidebar panel for inputs
     sidebarPanel(
       # Input: Slider for the year of observations to generate
-      sliderInput("year_one",
-        "Year of the observation:",
-        value = c(2010, 2019),
-        min = 2010,
-        max = 2019
-      )
+      checkboxGroupInput("type", "Type of houses", choices = type_of_choices)
     ),
     ## Output: Tabset with plot
-    mainPanel("Plot", plotlyOutput("plot_one"), textOutput("plot_text"))
+    mainPanel(plotlyOutput(outputId = "plot_one", height = "800px"), textOutput("plot_text"))
   )
 )
 
-page_three <- tabPanel(
-  "National Map",
-  textOutput("table_Demonstration")
+page_three <- tabPanel("Map", 
+                       sidebarLayout(
+                         sidebarPanel(
+                           radioButtons("house_type", "House Type:", c("1-Bed", "2-Bed", "3-Bed", "4-Bed", "5-Bed+", "Condo/Co-op", "Duplex/Triplex", "Single Family Residence (SFR)", "Studio"))
+                         ),
+                         mainPanel(
+                           plotOutput(outputId = "country_map")
+                         )
+                       )
 )
 
-page_four <- tabPanel(
-  "State Map",
-  textOutput("table_Demonstration")
-)
+page_four <- tabPanel("Table Graph")
 
-page_five <- tabPanel(
-  "Table Graph",
-  textOutput("table_Demonstration")
-)
-
+page_five <- tabPanel("Table Graph")
 
 my_ui <- fluidPage(
   titlePanel(strong("Anonymous Penguin")),
-  plotlyOutput("sample"),
   tabset_panel <- tabsetPanel(
     type = "tabs",
     page_one,
