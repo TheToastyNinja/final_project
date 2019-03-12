@@ -11,11 +11,9 @@ options(scipen = 999)
 page_one <- tabPanel("Introduction", 
                      textInput("name", "name"),
                      p(strong("hello guys !!!"), "We are penguins!"),
-                     textOutput("raph_Demonstration"))
-
-page_two <- tabPanel("Table Graph", 
-                     textOutput(outputId = "lel"),
                      textOutput("graph_Demonstration"))
+
+page_two <- tabPanel("Table Graph")
 
 page_three <- tabPanel("Map", 
                         sidebarLayout(
@@ -23,7 +21,7 @@ page_three <- tabPanel("Map",
                             radioButtons("house_type", "House Type:", c("1-Bed", "2-Bed", "3-Bed", "4-Bed", "5-Bed+", "Condo/Co-op", "Duplex/Triplex", "Single Family Residence (SFR)", "Studio"))
                           ),
                           mainPanel(
-                            plotOutput("house_type_map")
+                            plotOutput(outputId = "country_map")
                           )
                         )
                       )
@@ -31,8 +29,7 @@ page_three <- tabPanel("Map",
 page_four <- tabPanel("Table Graph", 
                       textOutput("table_Demonstration"))
 
-page_five <- tabPanel("Table Graph", 
-                      textOutput("table_Demonstration"))
+page_five <- tabPanel("Table Graph")
 
 
 my_ui <- fluidPage(
@@ -44,7 +41,6 @@ my_ui <- fluidPage(
         page_three,
         page_four,
         page_five
-
       )
   
 )
