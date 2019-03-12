@@ -14,6 +14,7 @@ page_one <- tabPanel("Introduction",
                      textOutput("raph_Demonstration"))
 
 page_two <- tabPanel("Table Graph", 
+                     textOutput(outputId = "lel"),
                      textOutput("graph_Demonstration"))
 
 page_three <- tabPanel("Table Graph", 
