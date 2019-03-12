@@ -17,8 +17,16 @@ page_two <- tabPanel("Table Graph",
                      textOutput(outputId = "lel"),
                      textOutput("graph_Demonstration"))
 
-page_three <- tabPanel("Table Graph", 
-                       textOutput("table_Demonstration"))
+page_three <- tabPanel("Map", 
+                        sidebarLayout(
+                          sidebarPanel(
+                            radioButtons("house_type", "House Type:", c("1-Bed", "2-Bed", "3-Bed", "4-Bed", "5-Bed+", "Condo/Co-op", "Duplex/Triplex", "Single Family Residence (SFR)", "Studio"))
+                          ),
+                          mainPanel(
+                            plotOutput("house_type_map")
+                          )
+                        )
+                      )
 
 page_four <- tabPanel("Table Graph", 
                       textOutput("table_Demonstration"))

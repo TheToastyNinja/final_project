@@ -21,7 +21,7 @@ c_condo_coop <- read.csv("data/County_MedianRentalPrice_CondoCoop.csv", stringsA
 
 
 
-c_1bed_edited <- change_colnames(c_1bed)
+c_1bed_edited <- change_colnames_county(c_1bed)
 c_2bed_edited <- change_colnames_county(c_2bed)
 c_3bed_edited <- change_colnames_county(c_3bed)
 c_4bed_edited <- change_colnames_county(c_4bed)
@@ -31,7 +31,7 @@ c_sfr_edited <- change_colnames_county(c_sfr)
 c_duplex_triplex_edited <- change_colnames_county(c_duplex_triplex)
 c_condo_coop_edited <- change_colnames_county(c_condo_coop)
 
-ncol(change_colnames(c_1bed))
+ncol(change_colnames_county(c_1bed))
 ncol(change_colnames_county(c_2bed))
 ncol(change_colnames_county(c_3bed))
 ncol(change_colnames_county(c_4bed))
