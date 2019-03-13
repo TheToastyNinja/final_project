@@ -1,5 +1,3 @@
-# install.packages("leaflet")
-library(leaflet)
 library(dplyr)
 library(ggplot2)
 library(tidyr)
@@ -90,9 +88,23 @@ colnames(combined_state_df)[3:11] <- names_of_selection
 
 page_one <- tabPanel(
   "Introduction",
-  textInput("name", "name"),
-  p(strong("hello guys !!!"), "We are penguins!"),
-  textOutput("graph_Demonstration")
+  navlistPanel(
+    tabPanel("Mission",
+             br(),
+             p("Over the years, the U.S. housing rental market have played an important and influential role in America's economy. As the cities expand and housing prices continue to grow, renting an apartment, instead of buying a home, has become more and more popular, especially among the younger generations and in the metro areas. As people are making one of the larggest decisions in anyone's life, which home to buy, it is worth considering that renting can be more beneficial and realistic, due to renting's advantages including lower intial investment, less responsbilities, less tax impact, more rooms for flexible budgeting and so on. Therefore, in this data report, we want to exam how the housing rental market in the U.S. has evolved over time. Using the data provided by Zillow, we examined the  rental markets of one-bedroom apartments, two-bedoom apartments, three-bedroom apartments, four-bedroom apartments, five-bedroom aprtments, studio, condo homes, duplex triplex, single family residences. The analysis is based on how the markets have varied across the nation, differed among various states, and changed over the years. Using our data report, users can ultilize the past data to predict the trends of housing rentals in the future.", style="font-size:130%; margin-bottom:20px;")),
+    tabPanel("Data Resource",
+             br(),
+             p("Zillow, founded by former Microsoft executives, Rich Barton and Lloyd Frink in 2006, is an online real estate database company. Providing data on more than 10 million homes in the United States, Zillow aims to build the largest, the most trusted, and the most vibrant online home-related marketplace. Zillow’s services include buying, selling, and renting houses and appartments. Zillow establishes its own advanced and well-organized data base constaining information on Home Values, Home Listings and Sales, Rental Values, Rental listings, Forecasts, and other more Metrics. Its dataa is used and analyzed across the world in different industries. For example, Zillow Home Value Index (ZHVI), an orgainized and up-to-date measure of the median estimated home value across a given region and housing type, is often used to estimate a home value on a given day. Therefore, the big and well-recorded data it provides is a good represetation of how the housing market in different places have changed over time.", style="font-size:140%; margin-bottom:20px;")),
+    tabPanel("Members",
+             br(),
+             p(strong("Alycia Nguyen",
+                      br(),
+                      "Matthew Young",
+                      br(),
+                      "Qiming Guan",
+                      br(),
+                      "Sihan Lu",
+                      style="font-size:140%; margin-bottom:10px;"))))
 )
 
 
@@ -124,10 +136,14 @@ page_three <- tabPanel(
   "Map",
   sidebarLayout(
     sidebarPanel(
-      radioButtons("house_type", "House Type:", c("1-Bed", "2-Bed", "3-Bed", "4-Bed", "5-Bed+", "Condo/Co-op", "Duplex/Triplex", "Single Family Residence (SFR)", "Studio"))
-    ),
+      radioButtons("house_type", "House Type:", c("1-Bed" = "one_bed_2019.01", "2-Bed" = "two_bed_2019.01", "3-Bed" = "three_bed_2019.01", "4-Bed" = "four_bed_2019.01", "5-Bed+" = "five_bed_plus_2019.01", "Condo/Co-op" = "condo_coop_2019.01", "Duplex/Triplex" = "duplex_triplex_2019.01", "Single Family Residence (SFR)" = "sfr_2019.01", "Studio" = "studio_2019.01")),
+      
+      br(),
+      
+      p(strong("How do the rents of types of housings vary among different states within U.S.?")),
+      p("The second visualization is a map of the United States of America. We used the data provided by Zillow to show the rental prices from the Jaunary of 2019. With the visualization,user can see how the the rents of all types of housings vary among different states within the U.S. The intensity of colors indicate the level of rental prices: darker the color is, higher the rent is, and vice versa. Certain housing types are more expensive in some states, while other types are moreexpensive in other states. The patterns of how the markets for various housing types in different states are unpredictable. Overall, there are few states that have rental prices for all types of housings higher than others, including New York, California, Washington D.C.. Two of the factors are state's economy and residents' consumption power.")),
     mainPanel(
-      plotOutput(outputId = "country_map")
+      plotOutput(outputId = "country_map", height = "800px", width = "1200px")
     )
   )
 )
@@ -139,7 +155,16 @@ page_five <- tabPanel(
   sidebarLayout(
     sidebarPanel(
       selectInput("states", "State", choices = state_choices, selected = state_choices[1]),
-      checkboxGroupInput("types", "Type of houses", choices = names_of_selection)
+      checkboxGroupInput("types", "Type of houses", choices = names_of_selection),
+      
+      br(),
+      
+      ## Sidebar layout with input and output definitions
+      sidebarLayout(
+        #Sidebar panel for inputs
+          p(strong("How did the listed price in each state change from year for different housings?")),
+          p("The fourth visualization is a line graph showing the how the market of various types of rental housing in each state have changed over the years. The x_axis represents the timeline from the Freburary of 2010 to the January of 2019. The y-axis represents the listed price. Users can use the side bar to select the state to display its changes in rental housing listed prices. Lines provide good visual representations of market flucuations. We used the data provided by Zillow to display the average rents of different type of housings at specific time frames. Users can select mutiple housings from the checkbox to display the desired data on the graph for comparison. The overall markets of all of the states' all housings experienced different levels of decreases in listed price in 2010 and continual but slow increases from 2011 to 2019. The decrease in 2010 might be the result from the 2008 financial crisis. As the economy is recovering, the rental housing market revives. An exception is the five-bedroom homes whose listed price fluctuates over the years. It is not surprising because of its large size causing its demand on the rental market to be unpredictable. There are a few states that have consistant rent prices over the years, for example, West Virginia and North Dakota. However, there are also a few states that have rapid growth in their rental market, including New York, California, and Oregon.")
+          )
     ),
     mainPanel(
       plotlyOutput("draw_lines", height = "800px")
@@ -148,7 +173,7 @@ page_five <- tabPanel(
 )
 
 my_ui <- fluidPage(
-  titlePanel(strong("Anonymous Penguin")),
+  titlePanel(strong("U.S. Rental Listing Market Analysis")),
   tabset_panel <- tabsetPanel(
     type = "tabs",
     page_one,
