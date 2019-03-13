@@ -30,23 +30,21 @@ page_two <- tabPanel("Year vs. Prices of various housings",
                      )
                    )
 
-page_three <- tabPanel("National Map",
-                       ## Sidebar layout with input and output definitions
-                       sidebarLayout(
-                         #Sidebar panel for inputs
-                         sidebarPanel(
-                            selectInput("Type", 
-                                        label = "Type of houses",
-                                        choices = c("Studio", "One Bedroom",
-                                                     "Two Bedroom", "Three Bedroom", "Four Bedroom"),
-                                        selected = "Studio")),
-                         mainPanel("Plot", plotlyOutput("plot_one"), textOutput("plot_text"))
-                       ))
-page_four <- tabPanel("State Map", 
+page_three <- tabPanel("Map", 
+                        sidebarLayout(
+                          sidebarPanel(
+                            radioButtons("house_type", "House Type:", c("1-Bed", "2-Bed", "3-Bed", "4-Bed", "5-Bed+", "Condo/Co-op", "Duplex/Triplex", "Single Family Residence (SFR)", "Studio"))
+                          ),
+                          mainPanel(
+                            plotOutput(outputId = "country_map")
+                          )
+                        )
+                      )
+
+page_four <- tabPanel("Table Graph", 
                       textOutput("table_Demonstration"))
 
-page_five <- tabPanel("Table Graph", 
-                      textOutput("table_Demonstration"))
+page_five <- tabPanel("Table Graph")
 
 
 my_ui <- fluidPage(
@@ -60,4 +58,5 @@ my_ui <- fluidPage(
         page_four,
         page_five
       )
+
 )
