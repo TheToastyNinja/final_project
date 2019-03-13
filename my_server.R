@@ -65,8 +65,6 @@ s_sfr_edited <- change_colnames_state(s_sfr)
 s_duplex_triplex_edited <- change_colnames_state(s_duplex_triplex)
 s_condo_coop_edited <- change_colnames_state(s_condo_coop)
 
-
-
 state_data <- left_join(s_1bed_edited, s_2bed_edited, by = c("RegionName", "SizeRank"))
 state_data <- left_join(state_data, s_3bed_edited, by = c("RegionName", "SizeRank"))
 state_data <- left_join(state_data, s_4bed_edited, by = c("RegionName", "SizeRank"))
@@ -91,10 +89,6 @@ get_interval <- function(house_type) {
   interval
 }
 
-test <- state_map_data %>% 
-  mutate(
-    interval = interval_vec
-  )
 colors <- c( "#ffeda0", "#fed976", "#feb24c", "#fd8d3c", "#fc4e2a", "#e31a1c", "#b10026")
 
 
@@ -102,6 +96,7 @@ colors <- c( "#ffeda0", "#fed976", "#feb24c", "#fd8d3c", "#fc4e2a", "#e31a1c", "
 
 
 my_server <- function(input, output){
+  
   output$country_map <- renderPlot({
     df <- state_map_data %>% 
       mutate(
@@ -132,5 +127,69 @@ my_server <- function(input, output){
   
   
   
+  output$plot_one <- renderPlotly({
+    if(!is.null(input$type)) {
+      cleaned_df <- combined_df[, c("Year", input$type)]
+      mean_plot <- plot_one_function(cleaned_df, input$type)
+      mean_plot <- mean_plot + labs(
+        title = "Years versus Types of houses",
+        x = "Months(from 2010.02 - 2019.01)",
+        y = "Price"
+      ) + 
+        theme(axis.title = element_text(size = 12),
+              axis.text.x=element_blank())
+      mean_plot
+    }
+  })
   
+  output$draw_lines <- renderPlotly({
+    if(!is.null(input$types)) {
+      data_df <- filter_for_state(input$states)
+      lines <- draw_lines(data_df, input$types)
+      lines <- lines + labs(
+        title = "Years versus Types of houses",
+        x = "Months(from 2010.02 - 2019.01)",
+        y = "Prices"
+      ) +
+        theme(axis.title = element_text(size = 12),
+              axis.text.x=element_blank())
+      lines
+    }
+  })
 }
+
+plot_one_function <- function(df, types) {
+  mean_plot <- ggplot(data = df)
+  index <- 1
+  while(index <= length(types)) {
+    mean_plot <- mean_plot + 
+      geom_point(mapping = aes_string(x = "Year", y = types[index]), 
+                color = color_type[match(types[index], type_of_choices)])
+    index <- index + 1
+  }
+  
+  mean_plot
+}
+
+
+filter_for_state <- function(state) {
+  df <- combined_state_df %>%
+    filter(RegionName == state) %>%
+    mutate(
+      months = 1:108
+    )
+  df
+}
+
+draw_lines <- function(df, types) {
+  lines <- ggplot(data = df)
+  index <- 1
+  while(index <= length(types)) {
+    lines <- lines +
+  geom_line(mapping = aes_string(x = "months", y = types[index]),
+            color = color_type[match(types[index], names_of_selection)])
+  index <- index + 1
+  }
+  lines
+}
+
