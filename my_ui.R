@@ -18,10 +18,12 @@ page_two <- tabPanel("Table Graph")
 page_three <- tabPanel("Map", 
                         sidebarLayout(
                           sidebarPanel(
-                            radioButtons("house_type", "House Type:", c("1-Bed", "2-Bed", "3-Bed", "4-Bed", "5-Bed+", "Condo/Co-op", "Duplex/Triplex", "Single Family Residence (SFR)", "Studio"))
+                            radioButtons("house_type", "House Type:", c("1-Bed" = "one_bed_2019.01", "2-Bed" = "two_bed_2019.01", "3-Bed" = "three_bed_2019.01", "4-Bed" = "four_bed_2019.01", "5-Bed+" = "five_bed_plus_2019.01", "Condo/Co-op" = "condo_coop_2019.01", "Duplex/Triplex" = "duplex_triplex_2019.01", "Single Family Residence (SFR)" = "sfr_2019.01", "Studio" = "studio_2019.01"))
                           ),
                           mainPanel(
-                            plotOutput(outputId = "country_map")
+                            plotOutput(outputId = "country_map", height = "800px", width = "1200px")
+                            
+                            
                           )
                         )
                       )
