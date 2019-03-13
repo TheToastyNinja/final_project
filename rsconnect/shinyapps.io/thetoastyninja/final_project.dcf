@@ -5,8 +5,8 @@ account: thetoastyninja
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 786478
-bundleId: 1935964
+bundleId: 1936062
 url: https://thetoastyninja.shinyapps.io/final_project/
-when: 1552472031.62669
+when: 1552475203.65094
 asMultiple: FALSE
 asStatic: FALSE
