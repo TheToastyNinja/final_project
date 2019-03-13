@@ -3,6 +3,8 @@ library(shiny)
 library(ggplot2)
 library(tidyr)
 library(maps)
+library(plotly)
+options(scipen = 999)
 #----------------joining data frames------------------------------
 change_colnames_county <- function(df){
   colnames(df)[7:length(colnames(df))] <- paste0(substr(deparse(substitute(df)),3, nchar(deparse(substitute(df)))), "_", substr(colnames(df)[7:length(colnames(df))], 2, nchar(colnames(df)[7:length(colnames(df))])))
@@ -34,24 +36,25 @@ c_sfr_edited <- change_colnames_county(c_sfr)
 c_duplex_triplex_edited <- change_colnames_county(c_duplex_triplex)
 c_condo_coop_edited <- change_colnames_county(c_condo_coop)
 
-ncol(change_colnames_county(c_1bed))
-ncol(change_colnames_county(c_2bed))
-ncol(change_colnames_county(c_3bed))
-ncol(change_colnames_county(c_4bed))
-ncol(change_colnames_county(c_5bed_plus))
-ncol(change_colnames_county(c_studio))
-ncol(change_colnames_county(c_sfr))
-ncol(change_colnames_county(c_duplex_triplex))
-ncol(change_colnames_county(c_condo_coop))
+nrow(change_colnames_county(c_1bed)) +
+nrow(change_colnames_county(c_2bed)) +
+nrow(change_colnames_county(c_3bed)) +
+nrow(change_colnames_county(c_4bed)) +
+nrow(change_colnames_county(c_5bed_plus)) +
+nrow(change_colnames_county(c_studio)) +
+nrow(change_colnames_county(c_sfr)) +
+nrow(change_colnames_county(c_duplex_triplex)) +
+nrow(change_colnames_county(c_condo_coop))
 
-county_data <- left_join(c_1bed_edited, c_2bed_edited, by = c("RegionName", "State", "Metro", "StateCodeFIPS", "MunicipalCodeFIPS", "SizeRank"))
-county_data <- left_join(county_data, c_3bed_edited, by = c("RegionName", "State", "Metro", "StateCodeFIPS", "MunicipalCodeFIPS", "SizeRank"))
-county_data <- left_join(county_data, c_4bed_edited, by = c("RegionName", "State", "Metro", "StateCodeFIPS", "MunicipalCodeFIPS", "SizeRank"))
-county_data <- left_join(county_data, c_5bed_plus_edited, by = c("RegionName", "State", "Metro", "StateCodeFIPS", "MunicipalCodeFIPS", "SizeRank"))
-county_data <- left_join(county_data, c_studio_edited, by = c("RegionName", "State", "Metro", "StateCodeFIPS", "MunicipalCodeFIPS", "SizeRank"))
-county_data <- left_join(county_data, c_sfr_edited, by = c("RegionName", "State", "Metro", "StateCodeFIPS", "MunicipalCodeFIPS", "SizeRank"))
-county_data <- left_join(county_data, c_duplex_triplex_edited, by = c("RegionName", "State", "Metro", "StateCodeFIPS", "MunicipalCodeFIPS", "SizeRank"))
-county_data <- left_join(county_data, c_condo_coop_edited, by = c("RegionName", "State", "Metro", "StateCodeFIPS", "MunicipalCodeFIPS", "SizeRank"))
+county_data <- full_join(c_1bed_edited, c_2bed_edited, by = c("RegionName", "State"), na.rm = FALSE)
+county_data <- full_join(county_data, c_3bed_edited, by = c("RegionName", "State"), na.rm = FALSE)
+county_data <- full_join(county_data, c_4bed_edited, by = c("RegionName", "State"), na.rm = FALSE)
+county_data <- full_join(county_data, c_5bed_plus_edited, by = c("RegionName", "State"), na.rm = FALSE)
+county_data <- full_join(county_data, c_studio_edited, by = c("RegionName", "State"), na.rm = FALSE)
+county_data <- full_join(county_data, c_sfr_edited, by = c("RegionName", "State"), na.rm = FALSE)
+county_data <- full_join(county_data, c_duplex_triplex_edited, by = c("RegionName", "State"), na.rm = FALSE)
+county_data <- full_join(county_data, c_condo_coop_edited, by = c("RegionName", "State"), na.rm = FALSE)
+
 #------------------------------------states--------------------------------
 s_1bed <- read.csv("data/State_MedianRentalPrice_1Bedroom.csv", stringsAsFactors = FALSE)
 s_2bed <- read.csv("data/State_MedianRentalPrice_2Bedroom.csv", stringsAsFactors = FALSE)
@@ -85,14 +88,59 @@ state_data <- left_join(state_data, s_condo_coop_edited, by = c("RegionName", "S
 #----------------------creating country map----------------------
 
 usa <- map_data("state")
-View(usa)
 
+counties <- map_data("county")
 
+my_label <- c("0-500", "500-1000", "1000-1500", "1500-2000", "2000-2500", "2500-3000", "3000-3500", "3500-4000", "4000-4500")
 #----------------------------------------------------------------
 my_server <- function(input, output){
   output$country_map <- renderPlot({
     ggplot(data = state_data)
   })
   
-  
+  output$county_level_state_map <- renderPlotly({
+    my_county <- counties %>% 
+      filter(region == tolower(input$state_selector))
+    
+    my_house_type <- county_data %>% 
+    filter(State == state.abb[which(state.name == input$state_selector)])
+    my_house_type <- my_house_type[, c("RegionName", input$house_type_county_map)]
+    names(my_house_type)[2] <- "prices" 
+    
+    my_house_type$RegionName <- tolower(my_house_type$RegionName)
+    my_house_type$RegionName <- gsub(" county", "", my_house_type$RegionName)
+    
+    my_county_house_info <- full_join(my_county, my_house_type, by = c("subregion" = "RegionName"))
+    Max <- max(my_county_house_info$prices)
+    Min <- min(my_county_house_info$prices)
+    my_county_house_info$house_price <- cut(my_county_house_info$prices, breaks = c(seq(0, 4500, by = 500)), labels = my_label)
+    
+    my_county_house_info %>%
+      group_by(group) %>%
+      plot_ly(
+        x = ~long, 
+        y = ~lat, 
+        color = ~house_price, 
+        colors = c('#ffeda0','#f03b20'),
+        text = ~subregion, 
+        hoverinfo = 'text'
+      ) %>%
+      add_polygons(
+        line = list(width = 0.4)
+      ) %>%
+      add_polygons(
+        fillcolor = 'transparent',
+        line = list(color = 'black', width = 0.5),
+        showlegend = FALSE, 
+        hoverinfo = 'none'
+      ) %>%
+      layout(
+        title = "WA Prices for SFR 2019 by County",
+        titlefont = list(size = 15),
+        xaxis = list(title = "", showgrid = FALSE,
+                     zeroline = FALSE, showticklabels = FALSE),
+        yaxis = list(title = "", showgrid = FALSE,
+                     zeroline = FALSE, showticklabels = FALSE)
+      )
+  })
 }
