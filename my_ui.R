@@ -1,4 +1,4 @@
-#install.packages("leaflet")
+# install.packages("leaflet")
 library(leaflet)
 library(dplyr)
 library(ggplot2)
@@ -7,78 +7,154 @@ library(shiny)
 library(plotly)
 library(maps)
 library(rsconnect)
+library(scales)
 options(scipen = 999)
 
+one_Bedroom <- read.csv("data/State_MedianRentalPrice_1Bedroom.csv", stringsAsFactors = F)
+two_Bedroom <- read.csv("data/State_MedianRentalPrice_2Bedroom.csv", stringsAsFactors = F)
+three_Bedroom <- read.csv("data/State_MedianRentalPrice_3Bedroom.csv", stringsAsFactors = F)
+four_Bedroom <- read.csv("data/State_MedianRentalPrice_4Bedroom.csv", stringsAsFactors = F)
+five_Bedroom <- read.csv("data/State_MedianRentalPrice_5BedroomOrMore.csv", stringsAsFactors = F)
+Condo_Bedroom <- read.csv("data/State_MedianRentalPrice_CondoCoop.csv", stringsAsFactors = F)
+Duplex_Triplex <- read.csv("data/State_MedianRentalPrice_DuplexTriplex.csv", stringsAsFactors = F)
+Sfr <- read.csv("data/State_MedianRentalPrice_Sfr.csv", stringsAsFactors = F)
+Studio <- read.csv("data/State_MedianRentalPrice_Studio.csv", stringsAsFactors = F)
 
-page_one <- tabPanel("Introduction", 
-                     textInput("name", "name"),
-                     p(strong("hello guys !!!"), "We are penguins!"),
-                     textOutput("graph_Demonstration"),
-                     navlistPanel(
-                       tabPanel("Mission"),
-                       tabPanel("Data Resource"),
-                       tabPanel("Members")))
 
-page_two <- tabPanel("Year vs. Prices of various housings of U.S.", 
-                     textOutput("graph_Demonstration"),
-                     
-                     ## Sidebar layout with input and output definitions
-                     sidebarLayout(
-                       #Sidebar panel for inputs
-                       sidebarPanel(
-                         p(strong("How did the listed price change from year for different types of housings?")),
-                        p("The first visualization is a scattorplot showing how the national market of various types of rental housing have changed over the years. The x_axis represents the timeline from the Freburary of 2010 to the January of 2019. The y-axis represents the listed price. We used the data provided by Zillow to calculate the national average of different type of housings at specific time frames. Users can select mutiple housings from the checkbox to display the desired data on the graph for comparison. The overall market of all housings experienced different levels of decreases in listed price in 2010 and continual but slow increases from 2011 to 2019. The decrease in 2010 might be the result from the 2008 financial crisis. As the economy is recovering, the rental housing market revives. An exception is the five-bedroom homes whose listed price fluctuates over the years. It is not surprising because of its large size causing its demand on the rental market to be unpredictable.")
-                       ),
-                       ## Output: Tabset with plot
-                       mainPanel("Plot", plotlyOutput("plot_one"), textOutput("plot_text"))
-                     )
-                   )
+get_mean <- function(sample_df) {
+  length_cols <- length(colnames(sample_df))
+  Mean <- as.data.frame(mean(unlist(sample_df[, length_cols]), na.rm = T))
+  colnames(Mean)[1] <- colnames(sample_df)[3]
+  index <- 4
+  while (index <= length_cols) {
+    names_sp <- colnames(sample_df)[index]
+    Mean <- mutate(Mean,
+      names = mean(unlist(sample_df[, index]), na.rm = T)
+    )
+    colnames(Mean)[index - 2] <- names_sp
+    index <- index + 1
+  }
+  type_name <- paste0(deparse(substitute(sample_df)), "_mean_price")
 
-page_three <- tabPanel("Map", 
-                        sidebarLayout(
-                          sidebarPanel(
-                            radioButtons("house_type", "House Type:", c("1-Bed", "2-Bed", "3-Bed", "4-Bed", "5-Bed+", "Condo/Co-op", "Duplex/Triplex", "Single Family Residence (SFR)", "Studio"))
-                          ),
-                          mainPanel(
-                            plotOutput(outputId = "country_map")
-                          )
-                        )
-                      )
+  Mean <- gather(Mean,
+    key = "Year",
+    value = type_name
+  )
+  colnames(Mean)[2] <- type_name
+  Mean
+}
 
-page_four <- tabPanel("Table Graph", 
-                      textOutput("table_Demonstration"))
+combined_df <- get_mean(one_Bedroom) %>%
+  left_join(get_mean(two_Bedroom), by = "Year") %>%
+  left_join(get_mean(three_Bedroom), by = "Year") %>%
+  left_join(get_mean(four_Bedroom), by = "Year") %>%
+  left_join(get_mean(five_Bedroom), by = "Year") %>%
+  left_join(get_mean(Condo_Bedroom), by = "Year") %>%
+  left_join(get_mean(Duplex_Triplex), by = "Year") %>%
+  left_join(get_mean(Sfr), by = "Year") %>%
+  left_join(get_mean(Studio), by = "Year")
 
-page_five <- tabPanel("Year vs. Prices of various housings of states",
-                      textOutput("graph_Demonstration"),
-                      ## Sidebar layout with input and output definitions
-                      sidebarLayout(
-                        #Sidebar panel for inputs
-                        sidebarPanel(
-                          p(strong("How did the listed price in each state change from year for different housings?")),
-                          p("The fourth visualization is a line graph showing the how the market of various types of rental housing in each state have changed over the years.
-                            The x_axis represents the timeline from the Freburary of 2010 to the January of 2019. The y-axis represents the listed price. Users can use the side bar to
-                            select the state to display its changes in rental housing listed prices. Lines provide good visual representations of market flucuations. We used the data provided by Zillow
-                            to display the average rents of different type of housings at specific time frames. Users can select mutiple housings from the checkbox to display the desired data on the 
-                            graph for comparison. The overall markets of all of the states' all housings experienced different levels of decreases in listed price in 2010 and continual but slow increases from 2011 to 2019. 
-                            The decrease in 2010 might be the result from the 2008 financial crisis. As the economy is recovering, the rental housing market revives. An exception is the five-bedroom homes 
-                            whose listed price fluctuates over the years. It is not surprising because of its large size causing its demand on the rental market to be unpredictable. There are a few states that have consistant rent prices
-                            over the years, for example, West Virginia and North Dakota. However, there are also a few states that have rapid growth in their rental market, including New York, California, and Oregon.")
-                        ),
-                          ## Output: Tabset with plot
-                        mainPanel(plotlyOutput("plot_one"), textOutput("plot_text"))
-                      ))
+color_type <- c(
+  "gray16", "deepskyblue2", "darkorchid3",
+  "blue1", "green4", "sienna3",
+  "violetred", "aquamarine1", "firebrick2"
+)
+combined_df$Year <- substr(combined_df$Year, 2, nchar(combined_df$Year))
+type_of_choices <- colnames(combined_df)[2:10]
+names_of_selection <- substr(type_of_choices, 1, nchar(type_of_choices) - 11)
+state_choices <- one_Bedroom$RegionName
 
+get_state_df <- function(df, index) {
+  df <- df %>%
+    select(-SizeRank) %>%
+    gather(
+      key = "Year",
+      value = types,
+      -RegionName
+    )
+  colnames(df)[3] <- type_of_choices[index]
+  df
+}
+
+combined_state_df <- get_state_df(one_Bedroom, 1) %>%
+  full_join(get_state_df(two_Bedroom, 2), by = c("Year", "RegionName")) %>%
+  full_join(get_state_df(three_Bedroom, 3), by = c("Year", "RegionName")) %>%
+  full_join(get_state_df(four_Bedroom, 4), by = c("Year", "RegionName")) %>%
+  full_join(get_state_df(five_Bedroom, 5), by = c("Year", "RegionName")) %>%
+  full_join(get_state_df(Condo_Bedroom, 6), by = c("Year", "RegionName")) %>%
+  full_join(get_state_df(Duplex_Triplex, 7), by = c("Year", "RegionName")) %>%
+  full_join(get_state_df(Sfr, 8), by = c("Year", "RegionName")) %>%
+  full_join(get_state_df(Studio, 9), by = c("Year", "RegionName"))
+
+colnames(combined_state_df)[3:11] <- names_of_selection
+
+page_one <- tabPanel(
+  "Introduction",
+  textInput("name", "name"),
+  p(strong("hello guys !!!"), "We are penguins!"),
+  textOutput("graph_Demonstration")
+)
+
+
+page_two <- tabPanel(
+  "Year vs. Prices of various housings",
+
+  ## Sidebar layout with input and output definitions
+  sidebarLayout(
+    # Sidebar panel for inputs
+    sidebarPanel(
+      # Input: Slider for the year of observations to generate
+      checkboxGroupInput("type", "Type of houses", choices = type_of_choices),
+
+
+      br(),
+
+
+      p(strong("How did the listed price change from year for different types of housings?")),
+      p("The first visualization is a scattorplot showing how the national market of various types of rental housing have changed over the years. The x_axis represents the timeline from the Freburary of 2010 to the January of 2019. The y-axis represents the listed price. We used the data provided by Zillow to calculate the national average of different type of housings at specific time frames. Users can select mutiple housings from the checkbox to display the desired data on the graph for comparison. The overall market of all housings experienced different levels of decreases in listed price in 2010 and continual but slow increases from 2011 to 2019. The decrease in 2010 might be the result from the 2008 financial crisis. As the economy is recovering, the rental housing market revives. An exception is the five-bedroom homes whose listed price fluctuates over the years. It is not surprising because of its large size causing its demand on the rental market to be unpredictable.")
+    ),
+    ## Output: Tabset with plot
+    mainPanel(plotlyOutput(outputId = "plot_one", height = "800px"))
+  )
+)
+
+
+
+page_three <- tabPanel(
+  "Map",
+  sidebarLayout(
+    sidebarPanel(
+      radioButtons("house_type", "House Type:", c("1-Bed", "2-Bed", "3-Bed", "4-Bed", "5-Bed+", "Condo/Co-op", "Duplex/Triplex", "Single Family Residence (SFR)", "Studio"))
+    ),
+    mainPanel(
+      plotOutput(outputId = "country_map")
+    )
+  )
+)
+
+page_four <- tabPanel("Table Graph")
+
+page_five <- tabPanel(
+  "Year vs. Prices of various housing of states",
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("states", "State", choices = state_choices, selected = state_choices[1]),
+      checkboxGroupInput("types", "Type of houses", choices = names_of_selection)
+    ),
+    mainPanel(
+      plotlyOutput("draw_lines", height = "800px")
+    )
+  )
+)
 
 my_ui <- fluidPage(
-    titlePanel(strong("Anonymous Penguin"),img(src = "data/ttt.png")),
-    textOutput("name"),
-      tabset_panel <- tabsetPanel(
-        type = "tabs",
-        page_one,
-        page_two,
-        page_three,
-        page_four,
-        page_five
-      )
-
+  titlePanel(strong("Anonymous Penguin")),
+  tabset_panel <- tabsetPanel(
+    type = "tabs",
+    page_one,
+    page_two,
+    page_three,
+    page_four,
+    page_five
+  )
 )

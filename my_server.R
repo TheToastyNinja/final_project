@@ -85,14 +85,78 @@ state_data <- left_join(state_data, s_condo_coop_edited, by = c("RegionName", "S
 #----------------------creating country map----------------------
 
 usa <- map_data("state")
-View(usa)
 
 
 #----------------------------------------------------------------
 my_server <- function(input, output){
-
+  
   output$country_map <- renderPlot({
     ggplot(data = state_data)
   })
+  
+  output$plot_one <- renderPlotly({
+    if(!is.null(input$type)) {
+      cleaned_df <- combined_df[, c("Year", input$type)]
+      mean_plot <- plot_one_function(cleaned_df, input$type)
+      mean_plot <- mean_plot + labs(
+        title = "Years versus Types of houses",
+        x = "Months(from 2010.02 - 2019.01)",
+        y = "Price"
+      ) + 
+        theme(axis.title = element_text(size = 12),
+              axis.text.x=element_blank())
+      mean_plot
+    }
+  })
+  
+  output$draw_lines <- renderPlotly({
+    if(!is.null(input$types)) {
+      data_df <- filter_for_state(input$states)
+      lines <- draw_lines(data_df, input$types)
+      lines <- lines + labs(
+        title = "Years versus Types of houses",
+        x = "Months(from 2010.02 - 2019.01)",
+        y = "Prices"
+      ) +
+        theme(axis.title = element_text(size = 12),
+              axis.text.x=element_blank())
+      lines
+    }
+  })
+}
+
+plot_one_function <- function(df, types) {
+  mean_plot <- ggplot(data = df)
+  index <- 1
+  while(index <= length(types)) {
+    mean_plot <- mean_plot + 
+      geom_point(mapping = aes_string(x = "Year", y = types[index]), 
+                color = color_type[match(types[index], type_of_choices)])
+    index <- index + 1
+  }
+  
+  mean_plot
+}
+
+
+filter_for_state <- function(state) {
+  df <- combined_state_df %>%
+    filter(RegionName == state) %>%
+    mutate(
+      months = 1:108
+    )
+  df
+}
+
+draw_lines <- function(df, types) {
+  lines <- ggplot(data = df)
+  index <- 1
+  while(index <= length(types)) {
+    lines <- lines +
+  geom_line(mapping = aes_string(x = "months", y = types[index]),
+            color = color_type[match(types[index], names_of_selection)])
+  index <- index + 1
+  }
+  lines
 }
 
