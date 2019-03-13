@@ -179,7 +179,7 @@ my_server <- function(input, output){
         hoverinfo = 'none'
       ) %>%
       layout(
-        title = "WA Prices for SFR 2019 by County",
+        title = paste(input$state_selector, "Prices for SFR 2019 by County"),
         titlefont = list(size = 15),
         xaxis = list(title = "", showgrid = FALSE,
                      zeroline = FALSE, showticklabels = FALSE),

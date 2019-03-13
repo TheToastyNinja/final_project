@@ -7,7 +7,6 @@ library(maps)
 library(rsconnect)
 library(scales)
 options(scipen = 999)
-source("my_server.R")
 
 one_Bedroom <- read.csv("data/State_MedianRentalPrice_1Bedroom.csv", stringsAsFactors = F)
 two_Bedroom <- read.csv("data/State_MedianRentalPrice_2Bedroom.csv", stringsAsFactors = F)
@@ -123,7 +122,10 @@ page_three <- tabPanel(
   "Map",
   sidebarLayout(
     sidebarPanel(
-      radioButtons("house_type", "House Type:", c("1-Bed" = "one_bed_2019.01", "2-Bed" = "two_bed_2019.01", "3-Bed" = "three_bed_2019.01", "4-Bed" = "four_bed_2019.01", "5-Bed+" = "five_bed_plus_2019.01", "Condo/Co-op" = "condo_coop_2019.01", "Duplex/Triplex" = "duplex_triplex_2019.01", "Single Family Residence (SFR)" = "sfr_2019.01", "Studio" = "studio_2019.01"))
+      radioButtons("house_type", "House Type:", c("1-Bed" = "one_bed_2019.01", "2-Bed" = "two_bed_2019.01", "3-Bed" = "three_bed_2019.01", "4-Bed" = "four_bed_2019.01", "5-Bed+" = "five_bed_plus_2019.01", "Condo/Co-op" = "condo_coop_2019.01", "Duplex/Triplex" = "duplex_triplex_2019.01", "Single Family Residence (SFR)" = "sfr_2019.01", "Studio" = "studio_2019.01")),
+      
+      p("How do the rents of types of housings vary among various counties in different states? The third visualization shows the maps of all counties within the various states in the U.S.. We used the data provided by Zillow to show the rental prices from the January of 2019. From the side bar, users are able to select multiple type of housings and select the desired state to view the data on the map. When user selects a state, the map will change into the map of the selected state, showing the data of its counties. With the visualization,user can see how the the rents of all types of housings vary among different counties within the state. The intensity of colors indicate the level of rental prices: darker the color is, higher the rent is, and vice versa. We have found that the counties near the major cities in the states usually have deeper colors, indicating higher rental prices in different types of housings.")
+      
     ),
     mainPanel(
       plotOutput(outputId = "country_map", height = "800px", width = "1200px")
@@ -134,8 +136,12 @@ page_three <- tabPanel(
 page_four <- tabPanel("County Level Map", 
                       sidebarLayout(
                         sidebarPanel(
-                          radioButtons("house_type_county_map", "Choose a house type to observe:", c("1-Bed" = "1bed_2019.01", "2-Bed" = "2bed_2019.01", "3-Bed" = "3bed_2019.01", "4-Bed" = "4bed_2019.01", "5-Bed+" = "5bed_plus_2019.01", "Condo/Co-op" = "condo_coop_2019.01", "Duplex/Triplex" = "duplex_triplex_2019.01", "Single Family Residence (SFR)" = "sfr_2019.01", "Studio" = "studio_2019.01")),
-                          selectInput("state_selector", "Choose a state to observe:", state_choices, selected = "Washington")
+                          radioButtons("house_type_county_map", "Choose a house type to observe:", c("1-Bed" = "one_bed_2019.01", "2-Bed" = "two_bed_2019.01", "3-Bed" = "three_bed_2019.01", "4-Bed" = "four_bed_2019.01", "5-Bed+" = "five_bed_plus_2019.01", "Condo/Co-op" = "condo_coop_2019.01", "Duplex/Triplex" = "duplex_triplex_2019.01", "Single Family Residence (SFR)" = "sfr_2019.01", "Studio" = "studio_2019.01")),
+                          selectInput("state_selector", "Choose a state to observe:", state_choices, selected = "Washington"),
+                          
+                          p("How do the rents of types of housings vary among various counties in different states?
+                              The third visualization shows the maps of all counties within the various states in the U.S.. We used the data provided by Zillow to show the rental prices from the January of 2019. From the side bar, users are able to select multiple type of housings and select the desired state to view the data on the map. When user selects a state, the map will change into the map of the selected state, showing the data of its counties. With the visualization,user can see how the the rents of all types of housings vary among different counties within the state. The intensity of colors indicate the level of rental prices: darker the color is, higher the rent is, and vice versa. We have found that the counties near the major cities in the states usually have deeper colors, indicating higher rental prices in different types of housings.")
+                          
                         ),
                         mainPanel(
                           plotlyOutput(outputId = "county_level_state_map", height = "700px")
