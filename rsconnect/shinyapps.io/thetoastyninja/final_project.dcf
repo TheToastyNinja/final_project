@@ -1,0 +1,12 @@
+name: final_project
+title: final_project
+username:
+account: thetoastyninja
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 786478
+bundleId: 1935964
+url: https://thetoastyninja.shinyapps.io/final_project/
+when: 1552472031.62669
+asMultiple: FALSE
+asStatic: FALSE

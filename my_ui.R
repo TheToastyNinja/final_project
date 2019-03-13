@@ -18,7 +18,6 @@ Duplex_Triplex <- read.csv("data/State_MedianRentalPrice_DuplexTriplex.csv", str
 Sfr <- read.csv("data/State_MedianRentalPrice_Sfr.csv", stringsAsFactors = F)
 Studio <- read.csv("data/State_MedianRentalPrice_Studio.csv", stringsAsFactors = F)
 
-
 get_mean <- function(sample_df) {
   length_cols <- length(colnames(sample_df))
   Mean <- as.data.frame(mean(unlist(sample_df[, length_cols]), na.rm = T))
@@ -41,6 +40,7 @@ get_mean <- function(sample_df) {
   colnames(Mean)[2] <- type_name
   Mean
 }
+
 
 combined_df <- get_mean(one_Bedroom) %>%
   left_join(get_mean(two_Bedroom), by = "Year") %>%
@@ -133,7 +133,7 @@ page_two <- tabPanel(
 
 
 page_three <- tabPanel(
-  "Map",
+  "State Level Map",
   sidebarLayout(
     sidebarPanel(
       radioButtons("house_type", "House Type:", c("1-Bed" = "one_bed_2019.01", "2-Bed" = "two_bed_2019.01", "3-Bed" = "three_bed_2019.01", "4-Bed" = "four_bed_2019.01", "5-Bed+" = "five_bed_plus_2019.01", "Condo/Co-op" = "condo_coop_2019.01", "Duplex/Triplex" = "duplex_triplex_2019.01", "Single Family Residence (SFR)" = "sfr_2019.01", "Studio" = "studio_2019.01")),
@@ -142,13 +142,29 @@ page_three <- tabPanel(
       
       p(strong("How do the rents of types of housings vary among different states within U.S.?")),
       p("The second visualization is a map of the United States of America. We used the data provided by Zillow to show the rental prices from the Jaunary of 2019. With the visualization,user can see how the the rents of all types of housings vary among different states within the U.S. The intensity of colors indicate the level of rental prices: darker the color is, higher the rent is, and vice versa. Certain housing types are more expensive in some states, while other types are moreexpensive in other states. The patterns of how the markets for various housing types in different states are unpredictable. Overall, there are few states that have rental prices for all types of housings higher than others, including New York, California, Washington D.C.. Two of the factors are state's economy and residents' consumption power.")),
+
     mainPanel(
       plotOutput(outputId = "country_map", height = "800px", width = "1200px")
     )
   )
 )
 
-page_four <- tabPanel("Table Graph")
+
+page_four <- tabPanel("County Level Map", 
+                      sidebarLayout(
+                        sidebarPanel(
+                          radioButtons("house_type_county_map", "Choose a house type to observe:", c("1-Bed" = "one_bed_2019.01", "2-Bed" = "two_bed_2019.01", "3-Bed" = "three_bed_2019.01", "4-Bed" = "four_bed_2019.01", "5-Bed+" = "five_bed_plus_2019.01", "Condo/Co-op" = "condo_coop_2019.01", "Duplex/Triplex" = "duplex_triplex_2019.01", "Single Family Residence (SFR)" = "sfr_2019.01", "Studio" = "studio_2019.01")),
+                          selectInput("state_selector", "Choose a state to observe:", state_choices, selected = "Washington"),
+                          
+                          p(strong("How do the rents of types of housings vary among various counties in different states?")),
+                          p("The third visualization shows the maps of all counties within the various states in the U.S.. We used the data provided by Zillow to show the rental prices from the January of 2019. From the side bar, users are able to select multiple type of housings and select the desired state to view the data on the map. When user selects a state, the map will change into the map of the selected state, showing the data of its counties. With the visualization,user can see how the the rents of all types of housings vary among different counties within the state. The intensity of colors indicate the level of rental prices: darker the color is, higher the rent is, and vice versa. We have found that the counties near the major cities in the states usually have deeper colors, indicating higher rental prices in different types of housings.")
+                          
+                        ),
+                        mainPanel(
+                          plotlyOutput(outputId = "county_level_state_map", height = "700px")
+                        )
+                      )
+)
 
 page_five <- tabPanel(
   "Year vs. Prices of various housing of states",
